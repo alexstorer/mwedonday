@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1b1340">
+<title>MWEDONDAY</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%231b1340'/%3E%3Ctext y='13' x='1' font-family='monospace' font-size='14' fill='%23ffd23f'%3EM%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jersey+25&family=DotGothic16&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="crt-overlay" aria-hidden="true"></div>
+<div class="starfield" aria-hidden="true"></div>
+
+<header class="topbar">
+  <h1 class="logo">
+    <span>MWEDONDAY</span>
+    <span class="logo-banner">SUPER WORKOUT EDITION</span>
+  </h1>
+  <button class="icon-btn" id="settings-btn" aria-label="Settings">SET</button>
+</header>
+
+<main>
+  <!-- STAGE: active workout view -->
+  <section class="stage" id="stage" data-phase="idle">
+    <div class="stage-frame">
+      <div class="stage-marquee">
+        <span class="marquee-chevron">◀</span>
+        <span class="marquee-text" id="marquee-text">READY</span>
+        <span class="marquee-chevron">▶</span>
+      </div>
+
+      <div class="stage-body">
+        <div class="monkey-stage">
+          <div class="monkey-shadow"></div>
+          <div class="monkey-platform"></div>
+          <div class="monkey" id="monkey"></div>
+          <div class="speech-bubble" id="speech-bubble" hidden></div>
+        </div>
+
+        <div class="hud">
+          <div class="hud-meta">
+            <span class="meta-pill" id="mode-pill">CIRCUIT</span>
+            <span class="meta-pill" id="round-pill">RND 0/0</span>
+          </div>
+          <div class="timer" id="timer">00:00</div>
+          <div class="time-worked" id="time-worked" hidden><span class="tw-label">WORKED</span><span class="tw-value" id="tw-value">00:00</span></div>
+          <div class="exercise-line" id="exercise-line">
+            <span class="exercise-reps" id="exercise-reps"></span>
+            <span class="exercise-name" id="exercise-name">PRESS START</span>
+          </div>
+          <ul class="exercise-list" id="exercise-list" hidden></ul>
+          <div class="upnext" id="upnext"></div>
+          <div class="progress-track">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="arcade-btn" id="pause-btn" hidden>PAUSE</button>
+        <button class="arcade-btn" id="advance-btn" hidden>✓ FINISH SET</button>
+        <button class="arcade-btn" id="finish-round-btn" hidden>▶▶ FINISH ROUND</button>
+        <button class="arcade-btn" id="up-btn"   hidden>▲ UP</button>
+        <button class="arcade-btn" id="stay-btn" hidden>↻ AGAIN</button>
+        <button class="arcade-btn" id="down-btn" hidden>▼ DOWN</button>
+        <button class="arcade-btn danger" id="stop-btn" hidden>STOP</button>
+      </div>
+      <div class="level-map" id="level-map" hidden></div>
+    </div>
+  </section>
+
+  <!-- SESSION LOG (today's completed workouts) -->
+  <section class="session-log" id="session-log" hidden>
+    <h2 class="section-title"><span class="bracket">[</span> TODAY'S TRAINING <span class="bracket">]</span></h2>
+    <ul class="log-list" id="log-list"></ul>
+  </section>
+
+  <!-- WORKOUT SELECT -->
+  <section class="select-screen">
+    <h2 class="section-title"><span class="bracket">[</span> SELECT MODE <span class="bracket">]</span></h2>
+    <div class="mode-grid" role="tablist">
+      <button class="mode-card" data-mode="circuit" aria-selected="true">
+        <div class="mode-icon">⏱</div>
+        <div class="mode-name">CIRCUIT</div>
+        <div class="mode-sub">work · rest · repeat</div>
+      </button>
+      <button class="mode-card" data-mode="amrap">
+        <div class="mode-icon">∞</div>
+        <div class="mode-name">AMRAP</div>
+        <div class="mode-sub">as many rounds as possible</div>
+      </button>
+      <button class="mode-card" data-mode="reps">
+        <div class="mode-icon">#</div>
+        <div class="mode-name">REPS</div>
+        <div class="mode-sub">tap to advance · count up</div>
+      </button>
+      <button class="mode-card" data-mode="ladder">
+        <div class="mode-icon">▲</div>
+        <div class="mode-name">LADDER</div>
+        <div class="mode-sub">climb up · climb down</div>
+      </button>
+    </div>
+
+    <!-- CONFIG PANELS -->
+    <div class="config-panel active" data-config="circuit">
+      <h3 class="panel-title">CIRCUIT CONFIG</h3>
+      <div class="form-row">
+        <label>WARMUP <span class="unit">sec</span><input type="number" id="c-warmup" min="0" max="300" value="10"></label>
+        <label>WORK <span class="unit">sec</span><input type="number" id="c-work" min="1" max="600" value="30"></label>
+        <label>REST <span class="unit">sec</span><input type="number" id="c-rest" min="0" max="600" value="15"></label>
+        <label>CYCLES<input type="number" id="c-cycles" min="1" max="50" value="8"></label>
+      </div>
+      <label class="full">EXERCISES (one per line, rotates per cycle)
+        <textarea id="c-exercises" rows="4" placeholder="Pushups&#10;Squats&#10;Situps">Pushups
+Squats
+Situps</textarea>
+      </label>
+      <div class="config-summary" id="c-summary">TOTAL TIME <strong>00:00</strong></div>
+    </div>
+
+    <div class="config-panel" data-config="amrap">
+      <h3 class="panel-title">AMRAP CONFIG</h3>
+      <div class="form-row">
+        <label>TIME <span class="unit">min</span><input type="number" id="a-mins" min="1" max="60" value="12"></label>
+        <label>WARMUP <span class="unit">sec</span><input type="number" id="a-warmup" min="0" max="300" value="10"></label>
+      </div>
+      <label class="full">EXERCISES (NAME × REPS, one per line)
+        <textarea id="a-exercises" rows="5" placeholder="Pushups x 10&#10;Pullups x 5&#10;Squats x 15">Pushups x 10
+Pullups x 5
+Squats x 15</textarea>
+      </label>
+      <div class="config-summary" id="a-summary">TOTAL TIME <strong>00:00</strong></div>
+      <p class="hint">Tap <strong>DONE!</strong> each time you complete a full round.</p>
+    </div>
+
+    <div class="config-panel" data-config="reps">
+      <h3 class="panel-title">REPS CONFIG</h3>
+      <div class="form-row">
+        <label>WARMUP <span class="unit">sec</span><input type="number" id="r-warmup" min="0" max="300" value="10"></label>
+        <label>ROUNDS<input type="number" id="r-rounds" min="1" max="50" value="1"></label>
+      </div>
+      <label class="full">EXERCISES (NAME × REPS, one per line)
+        <textarea id="r-exercises" rows="6" placeholder="Pushups x 25&#10;Pullups x 10&#10;Squats x 50&#10;Burpees x 15">Pushups x 25
+Pullups x 10
+Squats x 50
+Burpees x 15</textarea>
+      </label>
+      <p class="hint">Timer counts up. Tap <strong>DONE!</strong> after each exercise. Repeat for the chosen number of rounds.</p>
+    </div>
+
+    <div class="config-panel" data-config="ladder">
+      <h3 class="panel-title">LADDER CONFIG (free-climb)</h3>
+      <div class="form-row">
+        <label>WARMUP <span class="unit">sec</span><input type="number" id="l-warmup" min="0" max="300" value="10"></label>
+        <label>START RUNG<input type="number" id="l-start" min="1" max="50" value="1"></label>
+        <label>TIME CAP <span class="unit">min</span><input type="number" id="l-timecap" min="1" max="60" value="10"></label>
+      </div>
+      <label class="full">EXERCISES (NAME × MULT, one per line — reps = rung × mult)
+        <textarea id="l-exercises" rows="5" placeholder="Pushups x 1&#10;Situps x 2&#10;Squats x 3">Pushups x 1
+Situps x 2
+Squats x 3</textarea>
+      </label>
+      <div class="config-summary" id="l-summary">TIME CAP <strong>10:00</strong></div>
+      <p class="hint">Free-climb. Pick <strong>▲ UP</strong>, <strong>↻ AGAIN</strong>, or <strong>▼ DOWN</strong> after each set. Workout ends when the time cap runs out — visits per rung are tallied at the end.</p>
+    </div>
+
+    <div class="start-row">
+      <button class="arcade-btn primary big" id="start-btn">▶ START WORKOUT</button>
+    </div>
+
+    <div class="share-row">
+      <button class="arcade-btn ghost" id="share-btn">📋 COPY SHARE LINK</button>
+      <span class="share-status" id="share-status"></span>
+    </div>
+  </section>
+</main>
+
+<!-- SETTINGS MODAL -->
+<dialog class="modal" id="settings-modal">
+  <form method="dialog" class="modal-inner">
+    <h2 class="section-title"><span class="bracket">[</span> OPTIONS <span class="bracket">]</span></h2>
+
+    <div class="setting-row">
+      <label class="switch">
+        <span>MONKEY VOICE</span>
+        <input type="checkbox" id="opt-monkey" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="setting-row">
+      <span class="setting-label">ENCOURAGEMENT</span>
+      <div class="seg-control" id="opt-tone">
+        <button type="button" data-tone="off">OFF</button>
+        <button type="button" data-tone="supportive" data-selected="true">SUPPORT</button>
+        <button type="button" data-tone="mean">MEAN</button>
+      </div>
+    </div>
+
+    <div class="setting-row">
+      <label class="switch">
+        <span>SFX (CHIPTUNE)</span>
+        <input type="checkbox" id="opt-sfx" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="setting-row">
+      <label class="switch">
+        <span>WAKE LOCK (KEEP SCREEN ON)</span>
+        <input type="checkbox" id="opt-wake">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="setting-row">
+      <label class="switch">
+        <span>CRT SCANLINES</span>
+        <input type="checkbox" id="opt-crt">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="setting-row">
+      <span class="setting-label">VOICE</span>
+      <select id="opt-voice"></select>
+    </div>
+
+    <div class="setting-row">
+      <span class="setting-label">VOICE TEST</span>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+        <button type="button" class="arcade-btn ghost" id="opt-test"     style="padding:6px 10px;font-size:12px">SAY HI</button>
+        <button type="button" class="arcade-btn ghost" id="opt-test-raw" style="padding:6px 10px;font-size:12px">RAW</button>
+      </div>
+    </div>
+    <div class="setting-row" style="display:block">
+      <div id="opt-test-status" style="font-family:'Silkscreen',monospace;font-size:10px;color:var(--rest);letter-spacing:0.15em;line-height:1.4;word-break:break-word">—</div>
+    </div>
+
+    <button class="arcade-btn primary" value="close">DONE</button>
+  </form>
+</dialog>
+
+<!-- STOP CONFIRM MODAL -->
+<dialog class="modal" id="stop-modal">
+  <form method="dialog" class="modal-inner">
+    <h2 class="section-title"><span class="bracket">[</span> STOP WORKOUT? <span class="bracket">]</span></h2>
+    <p class="modal-text">Progress will be lost.</p>
+    <div class="modal-actions">
+      <button class="arcade-btn ghost" value="cancel">KEEP GOING</button>
+      <button class="arcade-btn danger" value="stop">STOP</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- STAGE-CLEAR overlay -->
+<div class="stage-clear" id="stage-clear" hidden>
+  <div class="stage-clear-card">
+    <div class="sc-title">STAGE CLEAR!</div>
+    <div class="sc-subtitle">Nice work. Ready for the next one?</div>
+    <div class="sc-stat-grid" id="sc-stats"></div>
+    <div class="sc-actions">
+      <button class="arcade-btn ghost" id="sc-share">📋 SHARE</button>
+      <button class="arcade-btn primary" id="sc-close">NEXT STAGE →</button>
+    </div>
+    <div class="sc-share-status" id="sc-share-status"></div>
+  </div>
+</div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
