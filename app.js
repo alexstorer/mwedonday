@@ -146,7 +146,7 @@ function readConfigFromUI() {
     cfg.circuit = {
       warmupSec: +$('#c-warmup').value || 0,
       workSec:   +$('#c-work').value || 30,
-      restSec:   +$('#c-rest').value || 15,
+      restSec:   $('#c-rest').value === '' ? 15 : Math.max(0, +$('#c-rest').value),
       cycles:    +$('#c-cycles').value || 8,
       exercises: parseExerciseList($('#c-exercises').value),
     };
