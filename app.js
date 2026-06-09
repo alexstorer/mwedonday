@@ -47,6 +47,7 @@ const downBtn        = $('#down-btn');
 const finishRoundBtn = $('#finish-round-btn');
 const timeWorkedEl   = $('#time-worked');
 const twValueEl      = $('#tw-value');
+const twLabelEl      = $('#tw-label');
 
 // ---------- services -------------------------------------------------------
 const monkey = new Monkey(monkeyEl, bubbleEl);
@@ -755,13 +756,31 @@ function tick() {
   }
 }
 
+// Total time left across the whole (fully timed) workout: what's left in the
+// current phase plus the planned duration of every phase still to come.
+function totalRemainingMs(elapsedInPhase) {
+  const ph = workout.phases[run.phaseIdx];
+  let ms = Math.max(0, (ph?.dur || 0) - elapsedInPhase);
+  for (let i = run.phaseIdx + 1; i < workout.phases.length; i++) {
+    ms += workout.phases[i].dur || 0;
+  }
+  return ms;
+}
+
 function updateHud(ph, elapsedInPhase) {
   if (!ph) return;
-  // Update "TIME WORKED" secondary display — visible only for the long
-  // time-capped phases where you want to see both clocks.
+  // Update the secondary clock under the big timer. For AMRAP/ladder it shows
+  // elapsed ("WORKED"); for circuits it shows total time left across the whole
+  // workout ("LEFT") alongside the current-exercise countdown.
   if (ph.kind === 'amrap' || ph.kind === 'ladder') {
     timeWorkedEl.hidden = false;
+    twLabelEl.textContent = 'WORKED';
     twValueEl.textContent = fmtTime(elapsedInPhase);
+  } else if (workout.kind === 'circuit'
+      && (ph.kind === 'warmup' || ph.kind === 'work' || ph.kind === 'rest')) {
+    timeWorkedEl.hidden = false;
+    twLabelEl.textContent = 'LEFT';
+    twValueEl.textContent = fmtTime(totalRemainingMs(elapsedInPhase));
   } else {
     timeWorkedEl.hidden = true;
   }
